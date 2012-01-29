@@ -2,8 +2,8 @@ package com.clementscode.sabacc.core;
 
 import java.util.ArrayList;
 
+import com.clementscode.sabacc.core.comm.InvalidMoveException;
 import com.clementscode.sabacc.core.deck.Card;
-import com.clementscode.sabacc.core.moves.InvalidMoveException;
 
 public class Player {
 
@@ -18,6 +18,13 @@ public class Player {
 	public Player(int id, int stack) {
 		this.id = id;
 		this.stack = stack;
+	}
+
+	public Player clone() {
+		Player rval = new Player(id, stack);
+		rval.hand = new ArrayList<Card>(hand);
+		rval.locked = new ArrayList<Card>(locked);
+		return rval;
 	}
 
 	public ArrayList<Card> getHand() {

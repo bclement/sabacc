@@ -1,4 +1,4 @@
-package com.clementscode.sabacc.core.moves;
+package com.clementscode.sabacc.core.comm;
 
 public class InvalidMoveException extends Exception {
 

@@ -15,6 +15,10 @@ public class Deck {
 		this(0);
 	}
 
+	protected Deck(Deck d) {
+		cards.addAll(d.cards);
+	}
+
 	public Deck(int shuffleCount) {
 		// suited
 		for (Suit s : Suit.values()) {
@@ -38,6 +42,10 @@ public class Deck {
 		cards.add(new SpecialCard(-17));
 		cards.add(new SpecialCard(-17));
 		shuffle(shuffleCount);
+	}
+
+	public Deck clone() {
+		return new Deck(this);
 	}
 
 	public void shuffle(int times) {
