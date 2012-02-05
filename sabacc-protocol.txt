@@ -80,6 +80,7 @@ in the following format:
 
 {
 "type" : "state",
+"table" : <string>,
 "round" : <integer>,
 "phase" : <string [waiting|bet|draw]>,
 "handPot" : <integer>,
@@ -101,6 +102,12 @@ in the following format:
 The 'handCards' list will be populated with empty strings when the hand cards are not publicly visible.
 This allows for the number of cards in the player's hand to be known. In the event of a showdown, these
 spots will be populated with actual card values.
+
+The cards values will be in the following format:
+
+-?[0-9]+(Sabers|Flasks|Coins|Staves)?
+
+Only suited cards will have the suit appended. Face cards can be identified by their numerical values.
 
 If the client is not authenticated, the server will redirect to a login page. If the client is not
 playing at the requested table, an error will be returned in the following format:
@@ -160,4 +167,184 @@ make a lock request to the server (covered later).
 "type" : "lock"
 }
 
+5. Bet Request
+The bet request sends information about betting from the client to the server.
 
+5.a Request
+
+http://<host>[:<port>]/bet
+
+The bet request is done via HTTP POST where the body conforms to the following format:
+
+{
+"type" : "bet",
+"table" : <string>,
+"move" : <string [check|fold|call|raise]>,
+"credits" : <integer>
+}
+
+The 'credits' field is only required if the 'move' is 'call' or 'raise'.
+
+5.b Response
+If it is the client's turn to bet and the bet request is valid, the server will return an updated state
+object.
+
+If the client is not at the specified table, the server will return an error in the following format:
+
+{
+"type" : "error",
+"name" : "notAtTable",
+"reason" : <string>
+}
+
+If the client is not the client's turn to move, the following error will be returned:
+
+{
+"type" : "error",
+"name" : "outOfTurn",
+"reason" : <string>
+}
+
+If it is the client's turn to move, but at a different phase (ie drawing), the following error will be
+returned:
+
+{
+"type" : "error",
+"name" : "unexpectedMove",
+"reason" : <string>
+}
+
+If the bet is invalid (ie checking when there is a bet on the table or calling with too few credits), the
+following error will be returned:
+
+{
+"type" : "error",
+"name" : "invalidBetMove",
+"reason" : <string>
+}
+
+6. Draw Request
+The draw request sends information about drawing cards from the client to the server.
+
+6.a Request
+
+http://<host>[:<port>]/draw
+
+The draw request is done via HTTP POST where the body conforms to the following format:
+
+{
+"type" : "draw",
+"table" : <string>,
+"move" : <string [stay|draw|trade]>,
+"card" : <string>
+}
+
+The 'card' field is only required if the 'move' is 'trade'.
+
+6.b Response
+If the client is at the requested table and the draw request is valid, an updated state object will be
+returned.
+
+If the client is not at the specified table, the server will return an error in the following format:
+
+{
+"type" : "error",
+"name" : "notAtTable",
+"reason" : <string>
+}
+
+If the client is not the client's turn to move, the following error will be returned:
+
+{
+"type" : "error",
+"name" : "outOfTurn",
+"reason" : <string>
+}
+
+If it is the client's turn to move, but at a different phase (ie betting), the following error will be
+returned:
+
+{
+"type" : "error",
+"name" : "unexpectedMove",
+"reason" : <string>
+}
+
+If the draw is invalid (ie trading a card the client doesn't have), the
+following error will be returned:
+
+{
+"type" : "error",
+"name" : "invalidDrawMove",
+"reason" : <string>
+}
+
+
+7. Lock Request
+The lock request sends information about locking cards from the client to the server.
+
+7.a Request
+
+http://<host>[:<port>]/lock
+
+The lock request is done via HTTP POST where the body conforms to the following format:
+
+{
+"type" : "lock",
+"table" : <string>,
+"move" : <string [stay|lock|trade|unlock]>,
+"lockingCard" : <string>,
+"unlockingCard" : <string>
+}
+
+The 'lockingCard' field is required for the 'lock' and 'trade' moves. The 'unlockingCard' field is
+required for the 'trade' and 'unlock' moves.
+
+7.b Response
+If the client is at the requested table and the lock request is valid, an updated state object will be
+returned.
+
+If the client is not at the specified table, the server will return an error in the following format:
+
+{
+"type" : "error",
+"name" : "notAtTable",
+"reason" : <string>
+}
+
+If the client is not the client's turn to move, the following error will be returned:
+
+{
+"type" : "error",
+"name" : "outOfTurn",
+"reason" : <string>
+}
+
+If it is the client's turn to move, but at a different phase (ie betting), the following error will be
+returned:
+
+{
+"type" : "error",
+"name" : "unexpectedMove",
+"reason" : <string>
+}
+
+If the lock is invalid (ie trading a card the client doesn't have), the
+following error will be returned:
+
+{
+"type" : "error",
+"name" : "invalidLockMove",
+"reason" : <string>
+}
+
+8. Leave Request
+The client can leave a table by making a leave request.
+
+8.a Request
+The leave request can be made by HTTP GET to the following path:
+
+http://<host>[:<port>]/leave?table=<string>
+
+8.b Response
+If the leave is successful, the server will respond with an HTTP 200 response.
