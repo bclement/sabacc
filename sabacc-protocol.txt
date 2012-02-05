@@ -1,0 +1,163 @@
+The sabacc protocol enables clients to connect and play out a sabacc game through a central server.
+Listed below are the valid requests a client can make to the server and the expected responses.
+
+1. Finding a table
+The server will respond to table listing requests by any client (authenticated or not). Table list
+requests can be made by sending an HTTP GET request to the following path:
+
+http://<host>[:<port>]/tables
+
+1.a Request parameters
+There are no GET or POST parameters required for this request
+
+1.b Response format
+The response to a get tables request will be a tables listing object that conforms with the
+following json format:
+
+{
+"type" : "tables",
+"tables" : [
+    { "name" : <string>,
+        "players" : <integer>,
+        "status" : <string [waiting|ingame]>
+    }, ... ]
+}
+
+Example response:
+
+{
+"type" : "tables",
+"tables" : [
+    { 
+        "name" : "table1",
+        "players" : 2,
+        "status" : "waiting"
+    }, {
+        "name" : "table2",
+        "players" : 5,
+        "status" : "ingame"
+    } ]
+}
+
+2. Join table request
+
+2.a Request. To join a table, a request is made using HTTP GET to the following path:
+
+http://<host>[:<port>]/join?table=<string>
+
+Where the <string> is the name of the table to join.
+
+2.b Response
+
+The client may be redirected to a login page if the client hasn't previously authenticated with the
+server.
+
+If the client is authorized to join the requested table and the table is open for joining players, a
+game state object will be returned to the client. (see section BLARG for state object format)
+
+If the client is not authorized to join the table or the table is not open for joining players (eg
+the game is in progress), an error object will be returned to the client with the following format:
+  
+{
+"type" : "error",
+"name" : "joinFailed",
+"reason" : <string>
+}
+
+3. State request
+When the client is connected to a game, it can request the current state of the game at any time.
+The state object will describe the current stage of the game as well as other players' number of
+cards, credit stack, locked cards, etc.
+
+3.a Request
+To get the state object for a game, an HTTP GET is made to the following path:
+
+http://<host>[:<port>]/state?table=<string>
+
+3.b Response
+If the client is authenticated and currently playing at the requested table, the response object will be
+in the following format:
+
+{
+"type" : "state",
+"round" : <integer>,
+"phase" : <string [waiting|bet|draw]>,
+"handPot" : <integer>,
+"sabaccPot" : <integer>,
+"players" : [
+    {
+        "name" : <string>,
+        "credits" : <integer>,
+        "bet" : <integer>,
+        "lastMove" : <string [call|check|raise|hold|draw|trade]>,
+        "handCards" : [ <string>... ],
+        "lockCards" : [ <string>... ],
+        "winner" : <string [true|false]>,
+        "onAction" : <string [true|false]>,
+        "folded" : <string [true|false]>
+    }, ... ]
+}
+
+The 'handCards' list will be populated with empty strings when the hand cards are not publicly visible.
+This allows for the number of cards in the player's hand to be known. In the event of a showdown, these
+spots will be populated with actual card values.
+
+If the client is not authenticated, the server will redirect to a login page. If the client is not
+playing at the requested table, an error will be returned in the following format:
+
+{
+"type" : "error",
+"name" : "notAtTable",
+"reason" : <string>
+}
+
+4. Move Request
+The move request mechanism is the main way for the server to request information from the client. The
+move path is polled by the client and waits for the server to request a game move.
+
+4.a Request
+The request is sent as an HTTP GET to the following path:
+
+http://<host>[:<port>]/move?table=<string>
+
+4.b Response
+The valid types of responses from a get move request are 'noop', 'bet', 'draw', 'lock'.
+
+4.b.i Noop response
+The noop response signifies that it is not currently the client's turn and no move is expected.
+
+{
+"type" : "noop",
+}
+
+4.b.ii Bet response
+The bet response signifies that the client is on the action in the betting phase. The client needs to
+make a bet request to the server (covered later).
+
+{
+"type" : "bet",
+"currentBet" : <integer>,
+"creditsInPot" : <integer>
+}
+
+The 'currentBet' field has the current high credit bet that needs to be met. The 'creditsInPot' field has
+the number of credits the client is already in for. If the next bet move is not a fold, it needs to be
+for at least 'currentBet' - 'creditsInPot'.
+
+4.b.iii Draw response
+The draw response signifies that the client is on the action in the drawing phase. The client needs to
+mae a draw request to the server (covered later).
+
+{
+"type" : "draw"
+}
+
+4.b.iv Lock response
+The lock response signifies that the client is on the action in the locking phase. The client needs to
+make a lock request to the server (covered later).
+
+{
+"type" : "lock"
+}
+
+
