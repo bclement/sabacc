@@ -18,7 +18,7 @@ following json format:
 "type" : "tables",
 "tables" : [
     { "name" : <string>,
-        "players" : <integer>,
+        "players" : [<string> ...],
         "status" : <string [waiting|ingame]>
     }, ... ]
 }
@@ -30,11 +30,11 @@ Example response:
 "tables" : [
     { 
         "name" : "table1",
-        "players" : 2,
+        "players" : ['bob', 'joe'],
         "status" : "waiting"
     }, {
         "name" : "table2",
-        "players" : 5,
+        "players" : ['billy', 'joyce', 'terry'],
         "status" : "ingame"
     } ]
 }
