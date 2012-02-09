@@ -3,6 +3,7 @@ package com.clementscode;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.RelativeLayout;
 
 public class SabaccClientActivity extends Activity {
 
@@ -18,7 +19,7 @@ public class SabaccClientActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 		Log.i(TAG, "onCreate");
-        setContentView(R.layout.main);
+        setContentView(R.layout.table_layout);
     }
 
 }
