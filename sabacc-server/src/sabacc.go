@@ -54,7 +54,6 @@ func listTables( w http.ResponseWriter, r *http.Request ){
 func handler( w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	u := user.Current(c)
-	t := test{1}
 	if u == nil {
 		url, err := user.LoginURL(c, r.URL.String())
 		if err != nil {
@@ -65,5 +64,5 @@ func handler( w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusFound)
 		return
 	}
-	fmt.Fprintf(w, "Sup, %v %d", u, t.num)
+	fmt.Fprintf(w, "Sup, %v ", u)
 }
