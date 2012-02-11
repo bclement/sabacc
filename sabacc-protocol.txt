@@ -93,9 +93,9 @@ in the following format:
         "lastMove" : <string [call|check|raise|hold|draw|trade]>,
         "handCards" : [ <string>... ],
         "lockCards" : [ <string>... ],
-        "winner" : <string [true|false]>,
-        "onAction" : <string [true|false]>,
-        "folded" : <string [true|false]>
+        "winner" : <boolean>,
+        "onAction" : <boolean>,
+        "folded" : <boolean>
     }, ... ]
 }
 

@@ -1,10 +1,9 @@
 package sabacc
 
 import (
-//	"os"
-//	"sort"
-//	"appengine"
-//	"appengine/datastore"
+	"os"
+	"appengine"
+	"appengine/datastore"
 )
 
 type State struct {
@@ -17,16 +16,28 @@ type State struct {
 	Players []Player `json:"players"`
 }
 
-type Player struct {
-	Name string `json:"name"`
-	Credits int `json:"credits"`
-	Bet int `json:"bet"`
-	LastMove string `json:"lastMove"`
-	HandCards []string `json:"handCards"`
-	LockCards []string `json:"lockCards"`
-	Winner string `json:"winner"`
-	OnAction string `json:"onAction"`
-	Folded string `json:"folded"`
-	table string
+func GetState(c appengine.Context, table *Table, name string, show bool) (*State, os.Error) {
+	rval := new(State)
+	rval.TypeName = "state"
+	rval.Table = table.Name
+	rval.Round = table.round
+	rval.Phase = table.phase
+	rval.HandPot = table.handpot
+	rval.SabaccPot = table.sabaccpot
+	rval.Players = make([]Player, len(table.Players))
+	for i := range table.Players {
+		pname := &table.Players[i]
+		pkey := datastore.NewKey(c, "Player", *pname + table.Name, 0, nil)
+		player := &rval.Players[i]
+		err := datastore.Get(c, pkey, player)
+		if err != nil {
+			// TODO recover?
+			return nil, err
+		}
+		if *pname != name && ( !show || player.Folded) {
+			// remove private info from player object
+			player.HandCards = nil
+		}
+	}
+	return rval, nil
 }
-

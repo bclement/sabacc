@@ -30,11 +30,18 @@ func join( w http.ResponseWriter, r *http.Request ){
 	}
 	r.ParseForm()
 	// TODO check table arg
-	err := joinTable(c, r.Form["table"][0], u.String())
+	state, err := joinTable(c, r.Form["table"][0], u.String())
 	if err != nil {
 		http.Error(w, err.String(), http.StatusInternalServerError)
+		return
 	}
-	fmt.Fprintf(w,"done")
+	var b []byte
+	b, err = json.Marshal(state)
+	if err != nil {
+		http.Error(w, err.String(), http.StatusInternalServerError)
+		return
+	}
+	fmt.Fprintf(w,"%s", b)
 }
 
 func listTables( w http.ResponseWriter, r *http.Request ){
@@ -48,7 +55,7 @@ func listTables( w http.ResponseWriter, r *http.Request ){
 		http.Error(w, err.String(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintf(w,"%s", b) 
+	fmt.Fprintf(w,"%s", b)
 }
 
 func handler( w http.ResponseWriter, r *http.Request) {
