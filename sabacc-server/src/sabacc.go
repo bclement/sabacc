@@ -8,6 +8,15 @@ import (
 	"appengine/user"
 )
 
+type Error struct {
+	TypeName string `json:"type"`
+	Name string `json:"name"`
+	Reason string `json:"reason"`
+}
+
+func (e *Error) String() string {
+	return e.Reason
+}
 
 func init() {
 	http.HandleFunc("/tables", listTables)
